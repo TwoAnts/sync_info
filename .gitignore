@@ -1,2 +1,5 @@
 *.pyc
 *.db
+si_env
+*.sock
+.bash*

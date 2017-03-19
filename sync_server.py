@@ -105,8 +105,8 @@ def sync_post():
     save_info(hostname, ips)
     return 'OK! :)'
        
-if __name__ == '__main__':
-    save_info('test', '0.0.0.0') 
-    print query_info()  
+#if __name__ == '__main__':
+#    save_info('test', '0.0.0.0') 
+#    print query_info()  
         
 
