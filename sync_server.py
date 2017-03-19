@@ -4,32 +4,67 @@
 from flask import Flask, request
 app = Flask(__name__)
 
+INFO_CLEAN_DAYS = 1
+
 DB_NAME = 'something.db'
 
 import os, sqlite3
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 
 CUR_DIR = os.path.abspath(os.path.dirname(__file__))
 
 DB_PATH = os.path.join(CUR_DIR, DB_NAME)
 
+CREATE_LOG_TABLE = 'create table if not exists log (\
+id integet PRIMART KEY,\
+action text NOT NULL,\
+time timestamp NOT NULL\
+);'
+
 CREATE_INFO_TABLE = 'create table if not exists info (\
 id integer PRIMARY KEY,\
 hostname text NOT NULL,\
 ip text NOT NULL,\
-time timestamp\
+time timestamp NOT NULL\
 );'
 
 def connect_db():
     return sqlite3.connect(DB_PATH, detect_types=sqlite3.PARSE_DECLTYPES)
 
+def drop_table():
+    conn = connect_db()
+    conn.execute('drop table info;')
+    conn.execute('drop table log;')
+    conn.commit()
+    conn.close()
+
 def init_db():
     conn = connect_db()
+    conn.execute(CREATE_LOG_TABLE)
     conn.execute(CREATE_INFO_TABLE)
     conn.close()
    
 init_db()
 
+def clean_info():
+    conn = connect_db()
+    clean_time_sql = 'select time from log where action == ?;'
+    clean_sql = 'delete from info where time < ? and hostname in \
+(select DISTINCT hostname from info where time >= ?);'
+    update_clean_time_sql = 'insert or replace into log(id, action, time) \
+values( (select id from log where action == ?), ?, ?);'
+    cur = conn.execute(clean_time_sql, ('clean',))
+    row = cur.fetchone()
+    days = (datetime.now() - row[0]).days if row else -1
+    if days >= 1 or days < 0:
+        print 'clean info'
+        deadtime = datetime.now() - timedelta(days=INFO_CLEAN_DAYS)
+        conn.execute(clean_sql, (deadtime, deadtime))
+        conn.execute(update_clean_time_sql, ('clean', 'clean', \
+                                            datetime.now()))
+        conn.commit()
+    conn.close()
+         
 
 def save_info(hostname, ip):
     conn = connect_db()
@@ -52,6 +87,7 @@ values( \
     conn.close()
 
 def query_info(hostname=''):
+    clean_info()
     query_sql = r'select hostname, ip, time from info '
     if hostname: query_sql += r'where hostname like ? ' 
     query_sql += ' order by hostname ASC, time DESC;'
