@@ -127,19 +127,29 @@ def dump_info(infos):
 
 @app.route('/sync', methods=['GET'])
 def sync_get_all():
-    return dump_info(query_info())
+    try:
+        return dump_info(query_info())
+    except:
+        return 'Something crashed! :)'
+    
 
 @app.route('/sync/<hostname>', methods=['GET'])
 def sync_get(hostname):
-    return dump_info(query_info(hostname))
+    try:
+        return dump_info(query_info(hostname))
+    except:
+        return 'Something crashed! :)'
  
 @app.route('/sync', methods=['POST'])
 def sync_post():
-    data = request.get_json(force=True)
-    ips = data['ip']
-    hostname = data['hostname']
-    save_info(hostname, ips)
-    return 'OK! :)'
+    try:
+        data = request.get_json(force=True)
+        ips = data['ip']
+        hostname = data['hostname']
+        save_info(hostname, ips)
+        return 'OK! :)'
+    except:
+        return 'Something crashed! :)'
        
 #if __name__ == '__main__':
 #    save_info('test', '0.0.0.0') 
