@@ -63,6 +63,8 @@ values( (select id from log where action == ?), ?, ?);'
         conn.execute(update_clean_time_sql, ('clean', 'clean', \
                                             datetime.now()))
         conn.commit()
+        print 'clean info done. %s changed.' %conn.total_changes
+        
     conn.close()
          
 
@@ -84,7 +86,9 @@ values( \
             info[3] = e
             conn.execute(update_sql, info)
     conn.commit()
+    total_changes = conn.total_changes
     conn.close()
+    return total_changes
 
 def query_info(hostname=''):
     clean_info()
@@ -146,8 +150,8 @@ def sync_post():
         data = request.get_json(force=True)
         ips = data['ip']
         hostname = data['hostname']
-        save_info(hostname, ips)
-        return 'OK! :)'
+        n = save_info(hostname, ips)
+        return 'OK! :) (%s changed)' %n
     except:
         return 'Something crashed! :)'
        
