@@ -1,5 +1,8 @@
 *.pyc
 *.db
-si_env
+*.json
+*.log
 *.sock
+
 .bash*
+si_env
