@@ -16,13 +16,13 @@ CUR_DIR = os.path.abspath(os.path.dirname(__file__))
 DB_PATH = os.path.join(CUR_DIR, DB_NAME)
 
 CREATE_LOG_TABLE = 'create table if not exists log (\
-id integet PRIMART KEY,\
+id int PRIMART KEY,\
 action text NOT NULL,\
 time timestamp NOT NULL\
 );'
 
 CREATE_INFO_TABLE = 'create table if not exists info (\
-id integer PRIMARY KEY,\
+id int PRIMARY KEY,\
 hostname text NOT NULL,\
 ip text NOT NULL,\
 time timestamp NOT NULL\
